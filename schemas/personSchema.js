@@ -35,6 +35,15 @@ const personSchema = new mongoose.Schema({
   }
 });
 
+personSchema.methods.addName = async function (name) {
+  try {
+      this.name = name;
+      // await this.save();
+      return this.name;
+  } catch (error) {
+      console.log(error);
+  }
+}
 personSchema.methods.addPic = async function (picUrl) {
   try {
       this.pic = picUrl;
@@ -66,17 +75,17 @@ personSchema.methods.addYear = async function (year) {
   }
 }
 
-personSchema.methods.addDob = async function (dob) {
+personSchema.methods.addBday = async function (bday) {
   try {
-      this.dob = dob;
+      this.bday = bday;
       // await this.save();
-      return this.dob;
+      return this.bday;
   } catch (error) {
       console.log(error);
   }
 }
 
 
-const Person = mongoose.model('Person', personSchema);
+const Person = mongoose.model('PERSON', personSchema);
 
 module.exports = Person;

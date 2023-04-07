@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const cloudinary = require('cloudinary').v2;
-const Person = require('../schemas/personSchema');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const fse = require('fs-extra');
 
+
+const Person = require('../schemas/personSchema');
+const ReviewUser = require('../schemas/reviewSchema')
 
 router.get('/', (req, res) => {
   res.json({ data: 'this is home page' })
@@ -38,7 +40,7 @@ const upload = multer({ storage: storage });
 // Route handler for adding a new person
 router.post('/addperson', upload.single('pic'), async (req, res) => {
   try {
-    const { name, bday, bio, year } = req.body;
+    const { name, bday, bio } = req.body;
 
     // Create a new person instance based on the schema
     const newPerson = new Person({
@@ -46,7 +48,7 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
       bday: bday,
       pic: '',
       bio: bio || '',
-      year: year || '',
+      year: '',
       dob: '',
       min: Math.floor(Math.random() * 9) + 1,
       sec: Math.floor(Math.random() * 9) + 1
@@ -82,10 +84,36 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
 });
 
 
+// GET all persons with reviews
+router.get('/getreviewperson', async (req, res) => {
+  try {
+    const reviewPersons = await ReviewUser.find();
+    const newPersons = await Person.find({ published: false });
+    const allPersons = reviewPersons.concat(newPersons);
+
+    res.status(200).json({
+      message: 'Success',
+      data: allPersons,
+      status: 200,
+      meaning: 'OK'
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+      error: error.message,
+      status: 500,
+      meaning: 'Internal Server Error'
+    });
+  }
+});
+
+
 // GET all persons
 router.get('/getallperson', async (req, res) => {
   try {
-    const persons = await Person.find();
+    const persons = await Person.find({ published: true, todelete: false });
+
     res.status(200).json({
       message: 'Success',
       data: persons,
@@ -103,47 +131,90 @@ router.get('/getallperson', async (req, res) => {
   }
 });
 
-// Update user fields if they exist
-router.post('/updateperson', upload.single('pic'), async (req, res) => {
+router.post('/updateperson', async (req, res) => {
+  const { person } = req.body;
+  const { id, name, bio, bday, pic, published, review, todelete } = person;
 
-  console.log('to update serevr')
+  try {
+    // Find the person by ID
+    const toperson = await Person.findById(id);
+    
+    if (!toperson) {
+      return res.status(404).json({
+        message: 'Person not found',
+        status: 404,
+        meaning: 'not found'
+      });
+    }
 
-  const { id, name, bio, bday } = req.body;
-  const pic = req.file && req.file.path;
+    if (name) {
+      toperson.name = name;
+    }
+    if (bio) {
+      toperson.bio = bio;
+    }
+    if (bday) {
+      toperson.bday = bday;
+    }
+    if (pic) {
+      toperson.pic = pic;
+    }
 
-  console.log(id, name)
+    if (published !== undefined) {
+      toperson.published = published;
+    }
+    if (review !== undefined) {
+      toperson.review = review;
+    }
+    if (todelete !== undefined) {
+      toperson.todelete = todelete;
+    }
 
-  // Check if person with the given ID exists
-  const person = await Person.findById(id);
-  if (!person) {
-    return res.status(404).json({
-      message: 'Person not found',
-      status: 404,
-      meaning: 'not found'
+    // Save the updated person to the database
+    await toperson.save();
+    await ReviewUser.findOneAndDelete({ _id: person._id });
+
+    return res.status(200).json({
+      message: 'Person updated successfully',
+      person: toperson,
+      status: 200,
+      meaning: 'ok'
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: 'Error saving person to database',
+      status: 500,
+      meaning: 'internal server error'
     });
   }
+});
 
-  // Update person's fields if they exist in request body
-  if (name) {
-    person.addName(name);
-    console.log(name)
-  }
 
-  if (bio) {
-    person.addBio(bio);
-    console.log(bio)
-  }
+let url
+router.post('/addreview', upload.single('pic'), async (req, res) => {
+  // console.log('to add review user')
 
-  if (bday) {
-    person.addBday(bday);
-    console.log(bday)
-  }
+  const { id, name, bio, bday, del } = req.body;
+  const pic = req.file && req.file.path;
+
+
+
+  // if (!reviewUser) {
+  //   return res.status(400).json({
+  //     message: "User not found",
+  //     status: 400,
+  //     meaning: "The user with the given ID does not exist",
+  //   });
+  // }
+
+
 
   if (pic) {
     // Upload pic to cloudinary and store url in person's pic field
     try {
       const result = await cloudinary.uploader.upload(pic);
-      person.addPic(result.secure_url);
+      url = result.secure_url
       console.log(result.secure_url)
     } catch (error) {
       console.log(error);
@@ -155,21 +226,55 @@ router.post('/updateperson', upload.single('pic'), async (req, res) => {
     }
   }
 
-  // Save updated person to database
   try {
-    await person.save();
-    return res.status(200).json({
-      message: 'Person updated successfully',
-      person: person,
-      status: 200,
-      meaning: 'ok'
-    });
+    let reviewUser = await ReviewUser.findOne({ id: id });
+    if (reviewUser) {
+      reviewUser.name = name || reviewUser.name;
+      reviewUser.bio = bio || reviewUser.bio;
+      reviewUser.bday = bday || reviewUser.bday;
+      reviewUser.pic = url || reviewUser.pic;
+      reviewUser.todelete = del || reviewUser.todelete;
+      reviewUser.review = true || reviewUser.review;
+      reviewUser.published = true || reviewUser.published;
+    } else {
+      reviewUser = new ReviewUser({
+        id,
+        name,
+        bio,
+        bday,
+        pic: url || "",
+        todelete: del,
+        review: true,
+        published: true
+      });
+    }
+    await reviewUser.save();
+
+    // console.log('del in rev', reviewUser)
+
+    if (reviewUser.todelete === true) {
+      console.log('delet...............')
+      return res.status(201).json({
+        message: "User has been marked for deletion",
+        status: 200,
+        meaning: "Success",
+        user: reviewUser
+      });
+    } else {
+      return res.status(201).json({
+        message: 'Data sent for review',
+        reviewUser: reviewUser,
+        status: 201,
+        meaning: 'Created'
+      });
+    }
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      message: 'Error saving person to database',
+      message: 'Unable to send the data for review',
       status: 500,
-      meaning: 'internal server error'
+      meaning: 'Internal Server Error'
     });
   }
 });

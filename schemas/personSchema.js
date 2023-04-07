@@ -17,9 +17,21 @@ const personSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  year: {
-    type: Number,
-    default: null
+  isbirthday: {
+    type: Boolean,
+    default: false
+  },
+  published: {
+    type: Boolean,
+    default: false
+  },
+  review: {
+    type: Boolean,
+    default: false
+  },
+  todelete: {
+    type: Boolean,
+    default: false
   },
   dob: {
     type: String,
@@ -65,11 +77,21 @@ personSchema.methods.addBio = async function (bio) {
   }
 }
 
-personSchema.methods.addYear = async function (year) {
+personSchema.methods.addReview = async function () {
   try {
-      this.year = year;
+      this.review = true;
       // await this.save();
-      return this.year;
+      return this.review;
+  } catch (error) {
+      console.log(error);
+  }
+}
+
+personSchema.methods.removeReview = async function () {
+  try {
+      this.review = false;
+      // await this.save();
+      return this.review;
   } catch (error) {
       console.log(error);
   }

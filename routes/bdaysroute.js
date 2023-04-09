@@ -88,7 +88,7 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
 // GET all persons with reviews
 router.get('/getreviewperson', async (req, res) => {
   try {
-    const reviewPersons = await ReviewUser.find();
+    const reviewPersons = await ReviewUser.find({review:true});
     const newPersons = await Person.find({ published: false, review: true });
     const allPersons = reviewPersons.concat(newPersons);
 

@@ -15,6 +15,11 @@ router.get('/', (req, res) => {
   res.json({ data: 'this is home page' })
 })
 
+// TWILLIO CONFIG
+const accountSid = 'AC108aa98b939e85693261d39bad6c8518';
+const authToken = '2fdf40b03ed15fb4ec3cb78ee313e5f6';
+const client = require('twilio')(accountSid, authToken);
+
 // Configure cloudinary
 cloudinary.config({
   cloud_name: 'dww0rxb4q',
@@ -58,8 +63,9 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
     // If a file was uploaded, upload it to Cloudinary and set the person's pic property to the returned URL
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path);
-      newPerson.pic = result.secure_url;
-      console.log('pic url', result.secure_url);
+      const url = cloudinary.url(result.public_id, { width: 300, height: 300, crop: "fill" });
+      newPerson.pic = url;
+      // console.log('pic url', result.secure_url);
       fs.unlinkSync(req.file.path); // Delete the file from the server
     }
 
@@ -88,7 +94,7 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
 // GET all persons with reviews
 router.get('/getreviewperson', async (req, res) => {
   try {
-    const reviewPersons = await ReviewUser.find({review:true});
+    const reviewPersons = await ReviewUser.find({ review: true });
     const newPersons = await Person.find({ published: false, review: true });
     const allPersons = reviewPersons.concat(newPersons);
 
@@ -208,10 +214,10 @@ router.post('/updateperson', async (req, res) => {
 });
 
 // adding a person after review
-let url
 router.post('/addreview', upload.single('pic'), async (req, res) => {
   // console.log('to add review user')
-
+  
+  let urls=[]
   const { id, name, bio, bday, del } = req.body;
   const pic = req.file && req.file.path;
 
@@ -231,8 +237,10 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
     // Upload pic to cloudinary and store url in person's pic field
     try {
       const result = await cloudinary.uploader.upload(pic);
-      url = result.secure_url
-      console.log(result.secure_url)
+      const url = cloudinary.url(result.public_id, { width: 300, height: 300, crop: "fill" });
+      urls.push(url)
+      fs.unlinkSync(req.file.path);
+      // console.log(url)
     } catch (error) {
       console.log(error);
       return res.status(500).json({
@@ -249,7 +257,7 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
       reviewUser.name = name || reviewUser.name;
       reviewUser.bio = bio || reviewUser.bio;
       reviewUser.bday = bday || reviewUser.bday;
-      reviewUser.pic = url || reviewUser.pic;
+      reviewUser.pic = urls[0] || reviewUser.pic;
       reviewUser.todelete = del || reviewUser.todelete;
       reviewUser.review = true || reviewUser.review;
       reviewUser.published = true || reviewUser.published;
@@ -259,12 +267,14 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
         name,
         bio,
         bday,
-        pic: url || "",
+        pic: urls[0] || "",
         todelete: del,
         review: true,
         published: true
       });
     }
+
+    console.log(reviewUser)
     await reviewUser.save();
 
     // console.log('del in rev', reviewUser)
@@ -305,6 +315,16 @@ router.post('/addsuggestion', async (req, res) => {
     const savedSuggestion = await newSuggestion.save();
 
     if (savedSuggestion) {
+
+      client.messages
+        .create({
+          body: JSON.stringify(req.body),
+          from: 'whatsapp:+14155238886',
+          to: 'whatsapp:+9779823316313'
+        })
+        .then(message => console.log(message.sid))
+
+
       res.status(201).json({
         message: 'Suggestion Received',
         suggestion: savedSuggestion,

@@ -133,7 +133,17 @@ router.get('/getallperson', async (req, res) => {
 
 router.post('/updateperson', async (req, res) => {
   const { person } = req.body;
-  const { id, name, bio, bday, pic, published, review, todelete } = person;
+  const { id, name, bio, bday, pic, published, review, todelete,reject } = person;
+
+  if(reject===true){
+    await ReviewUser.findOneAndDelete({ _id: person._id });
+    return res.status(200).json({
+      message: 'Person rejected',
+      status: 200,
+      meaning: 'ok'
+    });
+  }
+
 
   try {
     // Find the person by ID
@@ -175,7 +185,7 @@ router.post('/updateperson', async (req, res) => {
     await ReviewUser.findOneAndDelete({ _id: person._id });
 
     return res.status(200).json({
-      message: 'Person updated successfully',
+      message: 'Person updated',
       person: toperson,
       status: 200,
       meaning: 'ok'

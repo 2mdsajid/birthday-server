@@ -9,6 +9,7 @@ const fse = require('fs-extra');
 
 const Person = require('../schemas/personSchema');
 const ReviewUser = require('../schemas/reviewSchema')
+const Suggestion = require('../schemas/suggestionSchema')
 
 router.get('/', (req, res) => {
   res.json({ data: 'this is home page' })
@@ -88,7 +89,7 @@ router.post('/addperson', upload.single('pic'), async (req, res) => {
 router.get('/getreviewperson', async (req, res) => {
   try {
     const reviewPersons = await ReviewUser.find();
-    const newPersons = await Person.find({ published: false });
+    const newPersons = await Person.find({ published: false, review: true });
     const allPersons = reviewPersons.concat(newPersons);
 
     res.status(200).json({
@@ -120,6 +121,7 @@ router.get('/getallperson', async (req, res) => {
       status: 200,
       meaning: 'OK'
     });
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -131,29 +133,34 @@ router.get('/getallperson', async (req, res) => {
   }
 });
 
+// update person after review
 router.post('/updateperson', async (req, res) => {
   const { person } = req.body;
-  const { id, name, bio, bday, pic, published, review, todelete,reject } = person;
+  const { id, name, bio, bday, pic, published, review, todelete, reject } = person;
 
-  if(reject===true){
-    await ReviewUser.findOneAndDelete({ _id: person._id });
-    return res.status(200).json({
-      message: 'Person rejected',
-      status: 200,
-      meaning: 'ok'
-    });
-  }
 
 
   try {
     // Find the person by ID
     const toperson = await Person.findById(id);
-    
+
     if (!toperson) {
       return res.status(404).json({
         message: 'Person not found',
         status: 404,
         meaning: 'not found'
+      });
+    }
+
+    if (reject === true) {
+      await ReviewUser.findOneAndDelete({ _id: person.id });
+      toperson.review = false
+      toperson.published = false
+      return res.status(200).json({
+        message: 'Person rejected',
+        status: 200,
+        meaning: 'ok',
+        person: toperson
       });
     }
 
@@ -200,7 +207,7 @@ router.post('/updateperson', async (req, res) => {
   }
 });
 
-
+// adding a person after review
 let url
 router.post('/addreview', upload.single('pic'), async (req, res) => {
   // console.log('to add review user')
@@ -289,7 +296,55 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
   }
 });
 
+// adding suggestion
+router.post('/addsuggestion', async (req, res) => {
+  const { name, email, suggestion } = req.body;
 
+  try {
+    const newSuggestion = new Suggestion({ name, email, suggestion });
+    const savedSuggestion = await newSuggestion.save();
+
+    if (savedSuggestion) {
+      res.status(201).json({
+        message: 'Suggestion Received',
+        suggestion: savedSuggestion,
+        status: 201,
+        meaning: 'created'
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Server error',
+      status: 500,
+      meaning: 'internal server error'
+    });
+  }
+});
+
+// get suggestions
+router.get('/getsuggestions', async (req, res) => {
+  try {
+    const suggestions = await Suggestion.find();
+    if (suggestions) {
+      res.status(200).json({
+        message: 'Success',
+        data: suggestions,
+        status: 200,
+        meaning: 'OK'
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: 'Internal Server Error',
+      error: error.message,
+      status: 500,
+      meaning: 'Internal Server Error'
+    });
+  }
+});
 
 
 module.exports = router;

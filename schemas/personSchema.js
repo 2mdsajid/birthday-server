@@ -27,7 +27,7 @@ const personSchema = new mongoose.Schema({
   },
   review: {
     type: Boolean,
-    default: false
+    default: true
   },
   todelete: {
     type: Boolean,

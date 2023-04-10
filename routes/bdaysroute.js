@@ -145,23 +145,38 @@ router.post('/updateperson', async (req, res) => {
   const { id, name, bio, bday, pic, published, review, todelete, reject } = person;
 
 
+console.log('the received person',person)
 
   try {
     // Find the person by ID
-    const toperson = await Person.findById(id);
+    const toperson = await Person.findById(person.id);
 
+    // const toperson2 = await Person.findById('64342aecca1f1ffa9027dd5f');
+
+    // console.log(person.id)
+
+    console.log(toperson)
+    
     if (!toperson) {
+      // await ReviewUser.findOneAndDelete({ _id: person.id });
       return res.status(404).json({
         message: 'Person not found',
         status: 404,
         meaning: 'not found'
       });
-    }
+    } 
 
     if (reject === true) {
-      await ReviewUser.findOneAndDelete({ _id: person.id });
       toperson.review = false
-      toperson.published = false
+      toperson.published = person.published
+      await toperson.save();
+
+      const personinreview = await ReviewUser.find({ _id: person._id });
+
+      if(personinreview){
+        const personinreview = await ReviewUser.findOneAndDelete({ _id: person._id });
+      }
+
       return res.status(200).json({
         message: 'Person rejected',
         status: 200,
@@ -203,6 +218,7 @@ router.post('/updateperson', async (req, res) => {
       status: 200,
       meaning: 'ok'
     });
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -213,6 +229,7 @@ router.post('/updateperson', async (req, res) => {
   }
 });
 
+
 // adding a person after review
 router.post('/addreview', upload.single('pic'), async (req, res) => {
   // console.log('to add review user')
@@ -220,17 +237,6 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
   let urls=[]
   const { id, name, bio, bday, del } = req.body;
   const pic = req.file && req.file.path;
-
-
-
-  // if (!reviewUser) {
-  //   return res.status(400).json({
-  //     message: "User not found",
-  //     status: 400,
-  //     meaning: "The user with the given ID does not exist",
-  //   });
-  // }
-
 
 
   if (pic) {
@@ -249,6 +255,9 @@ router.post('/addreview', upload.single('pic'), async (req, res) => {
         meaning: 'internal server error'
       });
     }
+  } else {
+    const picurl = req.body.pic
+    urls.push(picurl)
   }
 
   try {

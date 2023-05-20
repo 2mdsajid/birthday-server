@@ -35,6 +35,8 @@ app.use(express.json())
 
 // importing the route
 app.use(require('./routes/bdaysroute'))
+app.use(require('./routes/vivaroute'))
+
 
 // CREATING SERVER TO RUN
 const server = http.createServer(app);

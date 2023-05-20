@@ -129,7 +129,6 @@ router.get('/getallperson', async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: 'Internal Server Error',
       error: error.message,
@@ -145,7 +144,7 @@ router.post('/updateperson', async (req, res) => {
   const { id, name, bio, bday, pic, published, review, todelete, reject } = person;
 
 
-console.log('the received person',person)
+  console.log('the received person', person)
 
   try {
     // Find the person by ID
@@ -156,7 +155,7 @@ console.log('the received person',person)
     // console.log(person.id)
 
     console.log(toperson)
-    
+
     if (!toperson) {
       // await ReviewUser.findOneAndDelete({ _id: person.id });
       return res.status(404).json({
@@ -164,7 +163,7 @@ console.log('the received person',person)
         status: 404,
         meaning: 'not found'
       });
-    } 
+    }
 
     if (reject === true) {
       toperson.review = false
@@ -173,7 +172,7 @@ console.log('the received person',person)
 
       const personinreview = await ReviewUser.find({ _id: person._id });
 
-      if(personinreview){
+      if (personinreview) {
         const personinreview = await ReviewUser.findOneAndDelete({ _id: person._id });
       }
 
@@ -233,8 +232,8 @@ console.log('the received person',person)
 // adding a person after review
 router.post('/addreview', upload.single('pic'), async (req, res) => {
   // console.log('to add review user')
-  
-  let urls=[]
+
+  let urls = []
   const { id, name, bio, bday, del } = req.body;
   const pic = req.file && req.file.path;
 

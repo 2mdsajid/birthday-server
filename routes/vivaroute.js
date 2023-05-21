@@ -45,10 +45,13 @@ router.get('/getselectedviva/:level?', async (req, res) => {
   
       // Query the Viva collection using the specified subject and/or level
       const selectedVivas = await Viva.find(query);
+const revertedVivas = selectedVivas.reverse();
+
+      console.log("🚀 ~ file: vivaroute.js:48 ~ router.get ~ selectedVivas:", selectedVivas)
   
       res.status(200).json({
         message: 'Data fetched successfully',
-        data: selectedVivas,
+        data: revertedVivas,
         status: 200,
       });
     } catch (error) {
@@ -110,7 +113,7 @@ router.get('/getselectedviva/:subject', async (req, res) => {
 
 router.post('/addviva', async (req, res) => {
     try {
-        const { author, content, subject, level, date } = req.body;
+        const { author, content, subject, level } = req.body;
 
         // Create a new viva document
         const newViva = new Viva({

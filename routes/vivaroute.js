@@ -3,6 +3,7 @@ const router = express.Router();
 
 
 const Viva = require('../schemas/vivaSchema')
+const newVisitor = require('../schemas/vivaUsers')
 
 router.get('/testt', async (req, res) => {
     res.json({ 'message': 'fuck br it is working' })
@@ -63,6 +64,52 @@ const revertedVivas = selectedVivas.reverse();
     }
   });
   
+
+  // add visitors
+router.post('/addvisitor', async (req, res) => {
+    try {
+        const { uniqueid, ip, useragent } = req.body
+
+        let newvisitor
+
+        newvisitor = await newVisitor.findOne({ uniqueid: uniqueid })
+
+        if (newvisitor) {
+            if (!newvisitor.ip || !newvisitor.useragent) {
+                newvisitor.ip = ip;
+                newvisitor.useragent = useragent;
+                await newvisitor.save();
+            }
+
+            return res.status(400).json({
+                message: 'Already visited by his user',
+                ip
+            });
+        }
+
+        newvisitor = new newVisitor({
+            uniqueid,
+            useragent,
+            ip
+        })
+
+        await newvisitor.save()
+        res.status(201).json({
+            message: 'visitor added ',
+            newvisitor,
+            status: 201,
+            meaning: 'created'
+        })
+
+    } catch (error) {
+        return res.status(501).json({
+            message: error.message,
+            status: 501,
+            meaning: 'internalerror'
+        })
+    }
+})
+
 
 /*
 router.get('/getselectedviva/:level', async (req, res) => {

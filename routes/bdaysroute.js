@@ -15,16 +15,13 @@ router.get('/', (req, res) => {
   res.json({ data: 'this is home page' })
 })
 
-// TWILLIO CONFIG
-const accountSid = 'AC108aa98b939e85693261d39bad6c8518';
-const authToken = '2fdf40b03ed15fb4ec3cb78ee313e5f6';
-const client = require('twilio')(accountSid, authToken);
+const {CLOUDINARY_cloud_name,CLOUDINARY_api_key,CLOUDINARY_api_secret} = require('../vars.js')
 
 // Configure cloudinary
 cloudinary.config({
-  cloud_name: 'dww0rxb4q',
-  api_key: '459624268647755',
-  api_secret: 'nnvB3I1oDJI5dDutlXIQ7ECE6H4'
+  cloud_name: process.env.CLOUDINARY_cloud_name || CLOUDINARY_cloud_name,
+  api_key: process.env.CLOUDINARY_api_key || CLOUDINARY_api_key ,
+  api_secret: process.env.CLOUDINARY_api_secret || CLOUDINARY_api_secret
 });
 
 

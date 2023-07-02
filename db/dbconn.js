@@ -1,10 +1,11 @@
 // const { ViewModuleSharp } = require("@material-ui/icons");
 const mongoose = require("mongoose")
+const {MONGOPASS} = require('../vars.js')
 
 // DeprecationWarning:
 mongoose.set('strictQuery', true)
 
-const pass = process.env.MONGOPASS
+const pass = process.env.MONGOPASS || MONGOPASS
 
 // const DB = `mongodb+srv://2mdsajid:${pass}@cluster0.6ngpgkm.mongodb.net/bdays?retryWrites=true&w=majority`
 const DB = `mongodb+srv://2mdsajid:${pass}@cluster0.kge356l.mongodb.net/birthday?retryWrites=true&w=majority`

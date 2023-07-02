@@ -15,13 +15,13 @@ router.get('/', (req, res) => {
   res.json({ data: 'this is home page' })
 })
 
-const {CLOUDINARY_cloud_name,CLOUDINARY_api_key,CLOUDINARY_api_secret} = require('../vars.js')
+// const {CLOUDINARY_cloud_name,CLOUDINARY_api_key,CLOUDINARY_api_secret} = require('../vars.js')
 
 // Configure cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_cloud_name || CLOUDINARY_cloud_name,
-  api_key: process.env.CLOUDINARY_api_key || CLOUDINARY_api_key ,
-  api_secret: process.env.CLOUDINARY_api_secret || CLOUDINARY_api_secret
+  cloud_name: process.env.CLOUDINARY_cloud_name,
+  api_key: process.env.CLOUDINARY_api_key  ,
+  api_secret: process.env.CLOUDINARY_api_secret 
 });
 
 

@@ -1,6 +1,6 @@
 // const { ViewModuleSharp } = require("@material-ui/icons");
 const mongoose = require("mongoose")
-const {MONGOPASS} = require('../vars.js')
+
 
 // DeprecationWarning:
 mongoose.set('strictQuery', true)

@@ -10,7 +10,7 @@ const dotenv = require('dotenv')
 dotenv.config({ path: './config.env' })
 
 // Getting the port value from the .env file or defaulting to 5000
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 3002
 
 // database connection
 require('./db/dbconn')

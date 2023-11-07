@@ -379,11 +379,13 @@ router.get("/getsuggestions", async (req, res) => {
   }
 });
 
-
 router.get("/sendmails", async (req, res) => {
   const today = moment().format("MMM DD");
   async function getPersonsWithTodayBirthday() {
-    const persons = await Person.find();
+    const persons = await Person.find({
+      published: true,
+      review:false,
+    });
     const personsWithTodayBirthday = persons.filter((person) => {
       const bday = moment(person.bday.toLowerCase(), "MMM D").format("MMM DD");
       return bday === today;
@@ -391,56 +393,73 @@ router.get("/sendmails", async (req, res) => {
     return personsWithTodayBirthday;
   }
   const bdays = await getPersonsWithTodayBirthday();
+  if (bdays.length === 0)
+    return res.status(301).json({ message: "No birthdays found for today" });
   const emails = await Emails.find({ status: false });
+  if (emails.length === 0)
+    return res.status(301).json({ message: "No email found to send" });
+
   emails.forEach(async (email) => {
-      const mailOptions = {
-        from: "livingasrb007@gmail.com",
-        to: email.email,
-        subject: "MCOMS Birthday Reminder",
-        html: `<div style="background-color: #f0f0f0; border-radius: 16px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); max-width: 400px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; background-color: #3399ff; border-radius: 16px; padding: 20px;">
-          <p style="font-size: 18px;">🎂🎉</p>
-          <div style="font-size: 28px; font-weight: bold; text-transform: capitalize; margin: 16px 0;">Happy Birthday!</div>
-        </div>
-        <div style="font-size: 18px; margin: 16px 0; text-align: center; color:#000000;">
-        <div style="font-size: 16px; margin: 16px 0; color:#000000;">
-          <b>Wallah habibi and habibi, it's <span style="font-size: 18px; color:#3399ff;"><strong>${today}</strong></span> and guess whose birthday is here ??</b> 
-        </div>
-          <p>Let's wish a very happy birthday to</p>
-          ${
-            bdays.length > 1
-              ? bdays
-                  .map((b) => {
-                    return `<b style="text-transform: capitalize; font-size: 26px">${b.name}</b><br>`;
-                  })
-                  .join("&<br/>")
-              : `<b style="text-transform: capitalize; font-size: 26px">${bdays[0].name}</b><br>`
-          }
-        </div>
-        <div style="font-style: italic; font-size: 15px; margin: 16px 0; text-align: center; color:#000000;">
-          <b>"May his/her day be filled with joy, laughter, and cherished moments. Wishing him/her a wonderful and happy birthday!"
-        </div>
-        <div style="font-size: 12px; color: #999999;">
-          And sorry if you did not like this and do not want to receive reminders in future then <a href="${
-            process.env.FRONTEND
-          }/unsubscribe/${email.email}" style="color: #999999; text-decoration: underline;">click here</a>.
-        </div>
+    const mailOptions = {
+      from: '"MCOMS Birthday Reminder" <livingasrb007@gmail.com>',
+      to: email.email,
+      subject: "MCOMS Birthday Reminder",
+      html: `<div style="background-color: #f0f0f0; border-radius: 16px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); max-width: 400px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; background-color: #3399ff; border-radius: 16px; padding: 20px;">
+        <p style="font-size: 18px;">🎂🎉</p>
+        <div style="font-size: 28px; font-weight: bold; text-transform: capitalize; margin: 16px 0;">Happy Birthday!</div>
       </div>
-          `,
-      };
-
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${email.email}`);
-        return res.status(200).json({ message: "Email sent successfully" });
-      } catch (error) {
-        if (error.message.includes("Invalid recipient")) {
-          console.log(`Wrong email address: ${email.email}`);
-        } else {
-          console.log(error);
+      <div style="font-size: 18px; margin: 16px 0; text-align: center; color: #000000;">
+        <div style="font-size: 16px; margin: 16px 0; color: #000000;">
+          <b>Wallah habibi and habibi, it's <span style="font-size: 18px; color: #3399ff;"><strong>${today}</strong></span> and guess whose birthday is here ??</b>
+        </div>
+        <p>Let's wish a very happy birthday to</p>
+        ${
+          bdays.length > 1
+            ? bdays
+                .map((b) => {
+                  return `<b style="text-transform: capitalize; font-size: 26px">${b.name}</b><br>`;
+                })
+                .join("&<br/>")
+            : `<b style="text-transform: capitalize; font-size: 26px">${bdays[0].name}</b><br>`
         }
-      }
+      </div>
+      <div style="font-style: italic; font-size: 15px; margin: 16px 0; text-align: center; color: #000000;">
+        <b>"May his/her day be filled with joy, laughter, and cherished moments. Wishing him/her a wonderful and happy birthday!"
+        </b>
+      </div>
+      <div style="font-size: 12px; color: #999999; text-align: center; margin: 7px 0;">
+        <strong><i>THIS IS AN AUTO GENERATED MAIL FROM THE MAIN WEBSITE. THIS WILL BE GENERATED WHENEVER THERE IS A BIRTHDAY</i></strong>
+      </div>
+      <div style="font-size: 12px; color: #999999; text-align: center;">
+        You can visit the original website
+        <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">here</a>.
+      </div>
+      <div style="font-size: 12px; color: #999999; text-align: center;">
+        Or add your birthday <a href="${process.env.FRONTEND}/addnew/" style="color: #999999; text-decoration: underline;">here</a>.
+      </div>
+      <div style="font-size: 12px; color: #999999; text-align: center;">
+        Or learn more about us <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">here</a>.
+      </div>
+      <div style="font-size: 12px; color: #999999; text-align: center;">
+        And sorry if you did not like this and do not want to receive reminders in the future then <a href="${process.env.FRONTEND}/unsubscribe/${email.email}" style="color: #999999; text-decoration: underline;">click here</a>.
+      </div>
+    </div>
+    
+      `,
+    };
 
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent to ${email.email}`);
+      return res.status(200).json({ message: "Email sent successfully - "+emails.length });
+    } catch (error) {
+      if (error.message.includes("Invalid recipient")) {
+        console.log(`Wrong email address: ${email.email}`);
+      } else {
+        console.log(error);
+      }
+    }
   });
 });
 
@@ -471,7 +490,7 @@ router.post("/addunsubnotificemail", async (req, res) => {
     if (!existingEmail) {
       return res.status(200).json({ message: "Email Doesn't Exist" });
     }
-    existingEmail.status = true
+    existingEmail.status = true;
     await existingEmail.save();
     return res.status(201).json({
       message: "Email unsubscribed successfully",

@@ -384,7 +384,7 @@ router.get("/sendmails", async (req, res) => {
   async function getPersonsWithTodayBirthday() {
     const persons = await Person.find({
       published: true,
-      review:false,
+      review: false,
     });
     const personsWithTodayBirthday = persons.filter((person) => {
       const bday = moment(person.bday.toLowerCase(), "MMM D").format("MMM DD");
@@ -394,17 +394,19 @@ router.get("/sendmails", async (req, res) => {
   }
   const bdays = await getPersonsWithTodayBirthday();
   if (bdays.length === 0)
-    return res.status(301).json({ message: "No birthdays found for today" });
-  const emails = await Emails.find({ status: false });
-  if (emails.length === 0)
-    return res.status(301).json({ message: "No email found to send" });
+    return res.status(200).json({ message: "No birthdays found for today" });
 
-  emails.forEach(async (email) => {
-    const mailOptions = {
-      from: '"MCOMS Birthday Reminder" <livingasrb007@gmail.com>',
-      to: email.email,
-      subject: "MCOMS Birthday Reminder",
-      html: `<div style="background-color: #f0f0f0; border-radius: 16px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); max-width: 400px; margin: 0 auto; padding: 20px;">
+  const emails = await Emails.find({ status: false }).select('email');
+  const emailsArray = emails.map(email => email.email);
+
+  if (emailsArray.length === 0)
+    return res.status(200).json({ message: "No email found to send" });
+  const mailOptions = {
+    from: '"MCOMS Birthday Reminder" <livingasrb007@gmail.com>',
+    to: emailsArray[0],
+    bcc: emailsArray.join(', '),
+    subject: "MCOMS Birthday Reminder",
+    html: `<div style="background-color: #f0f0f0; border-radius: 16px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); max-width: 400px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; background-color: #3399ff; border-radius: 16px; padding: 20px;">
         <p style="font-size: 18px;">🎂🎉</p>
         <div style="font-size: 28px; font-weight: bold; text-transform: capitalize; margin: 16px 0;">Happy Birthday!</div>
@@ -414,15 +416,14 @@ router.get("/sendmails", async (req, res) => {
           <b>Wallah habibi and habibi, it's <span style="font-size: 18px; color: #3399ff;"><strong>${today}</strong></span> and guess whose birthday is here ??</b>
         </div>
         <p>Let's wish a very happy birthday to</p>
-        ${
-          bdays.length > 1
-            ? bdays
-                .map((b) => {
-                  return `<b style="text-transform: capitalize; font-size: 26px">${b.name}</b><br>`;
-                })
-                .join("&<br/>")
-            : `<b style="text-transform: capitalize; font-size: 26px">${bdays[0].name}</b><br>`
-        }
+        ${bdays.length > 1
+        ? bdays
+          .map((b) => {
+            return `<b style="text-transform: capitalize; font-size: 26px">${b.name}</b><br>`;
+          })
+          .join("&<br/>")
+        : `<b style="text-transform: capitalize; font-size: 26px">${bdays[0].name}</b><br>`
+      }
       </div>
       <div style="font-style: italic; font-size: 15px; margin: 16px 0; text-align: center; color: #000000;">
         <b>"May his/her day be filled with joy, laughter, and cherished moments. Wishing him/her a wonderful and happy birthday!"
@@ -442,25 +443,24 @@ router.get("/sendmails", async (req, res) => {
         Or learn more about us <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">here</a>.
       </div>
       <div style="font-size: 12px; color: #999999; text-align: center;">
-        And sorry if you did not like this and do not want to receive reminders in the future then <a href="${process.env.FRONTEND}/unsubscribe/${email.email}" style="color: #999999; text-decoration: underline;">click here</a>.
+        And sorry if you did not like this and do not want to receive reminders in the future then <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">click here</a>.
       </div>
     </div>
     
       `,
-    };
+  };
 
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log(`Email sent to ${email.email}`);
-      return res.status(200).json({ message: "Email sent successfully - "+emails.length });
-    } catch (error) {
-      if (error.message.includes("Invalid recipient")) {
-        console.log(`Wrong email address: ${email.email}`);
-      } else {
-        console.log(error);
-      }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to`);
+    return res.status(200).json({ message: "Email sent successfully - " + emailsArray.length });
+  } catch (error) {
+    if (error.message.includes("Invalid recipient")) {
+      console.log(`Wrong email address: `);
+    } else {
+      console.log(error);
     }
-  });
+  }
 });
 
 router.post("/addemail", async (req, res) => {
@@ -482,6 +482,34 @@ router.post("/addemail", async (req, res) => {
     });
   }
 });
+
+router.get("/add-emails", async (req, res) => {
+  try {
+    const emails = [
+      '2alamsajid@gmail.com',
+      'livingasrb007@gmail.com'
+    ]
+    // const { email } = req.body;
+    emails.forEach(async (email) => {
+      const existingEmail = await Emails.findOne({ email });
+      if (!existingEmail) {
+        const newEmail = new Emails({ email });
+        console.log("🚀 ~ emails.forEach ~ newEmail:", newEmail)
+        await newEmail.save();
+      }
+    })
+    return res
+      .status(201)
+      .json({ message: "Email added successfully", emails: emails.length });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to add email",
+      error: error.message,
+    });
+  }
+});
+
+
 
 router.post("/addunsubnotificemail", async (req, res) => {
   try {

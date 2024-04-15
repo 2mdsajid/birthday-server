@@ -429,22 +429,17 @@ router.get("/sendmails", async (req, res) => {
         <b>"May his/her day be filled with joy, laughter, and cherished moments. Wishing him/her a wonderful and happy birthday!"
         </b>
       </div>
-      <div style="font-size: 12px; color: #999999; text-align: center; margin: 7px 0;">
+      <div style="font-size: 10px; color: #999999; text-align: center; margin: 7px 0;">
         <strong><i>THIS IS AN AUTO GENERATED MAIL FROM THE MAIN WEBSITE. THIS WILL BE GENERATED WHENEVER THERE IS A BIRTHDAY</i></strong>
       </div>
-      <div style="font-size: 12px; color: #999999; text-align: center;">
-        You can visit the original website
-        <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">here</a>.
-      </div>
-      <div style="font-size: 12px; color: #999999; text-align: center;">
-        Or add your birthday <a href="${process.env.FRONTEND}/addnew/" style="color: #999999; text-decoration: underline;">here</a>.
-      </div>
-      <div style="font-size: 12px; color: #999999; text-align: center;">
-        Or learn more about us <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">here</a>.
-      </div>
-      <div style="font-size: 12px; color: #999999; text-align: center;">
-        And sorry if you did not like this and do not want to receive reminders in the future then <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">click here</a>.
-      </div>
+      <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin: 7px 0;">
+  <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">Visit</a>.&nbsp;
+  <a href="${process.env.FRONTEND}/addnew/" style="color: #999999; text-decoration: underline;">Add</a>.&nbsp;
+  <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">About</a>.&nbsp;
+  <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">Unsubscribe</a>.
+</div>
+
+      
     </div>
     
       `,

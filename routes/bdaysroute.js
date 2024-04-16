@@ -380,19 +380,17 @@ router.get("/getsuggestions", async (req, res) => {
 });
 
 router.get("/sendmails", async (req, res) => {
-  const today = moment().format("MMM DD");
-  async function getPersonsWithTodayBirthday() {
-    const persons = await Person.find({
-      published: true,
-      review: false,
-    });
-    const personsWithTodayBirthday = persons.filter((person) => {
-      const bday = moment(person.bday.toLowerCase(), "MMM D").format("MMM DD");
-      return bday === today;
-    });
-    return personsWithTodayBirthday;
-  }
-  const bdays = await getPersonsWithTodayBirthday();
+  const today = moment().add(1, 'days').format("MMM DD");
+  const persons = await Person.find({
+    published: true,
+    review: false,
+  });
+
+  const bdays = persons.filter((person) => {
+    const bday = moment(person.bday.toLowerCase(), "MMM D").format("MMM DD");
+    return bday === today;
+  });
+
   if (bdays.length === 0)
     return res.status(200).json({ message: "No birthdays found for today" });
 
@@ -438,8 +436,6 @@ router.get("/sendmails", async (req, res) => {
   <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">About</a>.&nbsp;
   <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">Unsubscribe</a>.
 </div>
-
-      
     </div>
     
       `,

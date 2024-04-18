@@ -427,17 +427,19 @@ router.get("/sendmails", async (req, res) => {
         <b>"May his/her day be filled with joy, laughter, and cherished moments. Wishing him/her a wonderful and happy birthday!"
         </b>
       </div>
-      <div style="font-size: 10px; color: #999999; text-align: center; margin: 7px 0;">
-        <strong><i>THIS IS AN AUTO GENERATED MAIL FROM THE MAIN WEBSITE. THIS WILL BE GENERATED WHENEVER THERE IS A BIRTHDAY</i></strong>
-      </div>
-      <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin: 7px 0;">
-  <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">Visit</a>.&nbsp;
-  <a href="${process.env.FRONTEND}/addnew/" style="color: #999999; text-decoration: underline;">Add</a>.&nbsp;
-  <a href="${process.env.FRONTEND}/about/" style="color: #999999; text-decoration: underline;">About</a>.&nbsp;
+      <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin: 7px auto; width: fit-content;">  
+      <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">Visit</a>.&nbsp;
+  <a href="${process.env.FRONTEND}/addnew" style="color: #999999; text-decoration: underline;">Add</a>.&nbsp;
+  <a href="${process.env.FRONTEND}/about" style="color: #999999; text-decoration: underline;">About</a>.&nbsp;
   <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">Unsubscribe</a>.
 </div>
+      <div style="font-size: 8px; color: #999999; text-align: center; margin: 7px 0;">
+        <strong><i>**THIS IS AN AUTO GENERATED MAIL FROM THE MAIN WEBSITE. THIS WILL BE GENERATED WHENEVER THERE IS A BIRTHDAY**</i></strong>
+      </div>
+      <div style="font-size: 8px; color: #999999; text-align: center; margin: 7px 0;">
+        Made with ❤️ by <a href='sajidaalam.com.np'>sajid</a>
+      </div>
     </div>
-    
       `,
   };
 
@@ -485,7 +487,6 @@ router.get("/add-emails", async (req, res) => {
       const existingEmail = await Emails.findOne({ email });
       if (!existingEmail) {
         const newEmail = new Emails({ email });
-        console.log("🚀 ~ emails.forEach ~ newEmail:", newEmail)
         await newEmail.save();
       }
     })
@@ -507,7 +508,7 @@ router.post("/addunsubnotificemail", async (req, res) => {
     const { email } = req.body;
     const existingEmail = await Emails.findOne({ email });
     if (!existingEmail) {
-      return res.status(200).json({ message: "Email Doesn't Exist" });
+      return res.status(400).json({ message: "Email Doesn't Exist" });
     }
     existingEmail.status = true;
     await existingEmail.save();

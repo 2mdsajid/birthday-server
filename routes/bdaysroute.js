@@ -390,12 +390,12 @@ router.get("/sendmails", async (req, res) => {
     const bday = moment(person.bday.toLowerCase(), "MMM D").format("MMM DD");
     return bday === today;
   });
-
   if (bdays.length === 0)
     return res.status(200).json({ message: "No birthdays found for today" });
 
   const emails = await Emails.find({ status: false }).select('email');
   const emailsArray = emails.map(email => email.email);
+  
 
   if (emailsArray.length === 0)
     return res.status(200).json({ message: "No email found to send" });
@@ -428,13 +428,13 @@ router.get("/sendmails", async (req, res) => {
         </b>
       </div>
       <div style="display: flex; justify-content: center; align-items: center; text-align: center; margin: 7px auto; width: fit-content;">  
-      <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">Visit</a>.&nbsp;
-  <a href="${process.env.FRONTEND}/addnew" style="color: #999999; text-decoration: underline;">Add</a>.&nbsp;
-  <a href="${process.env.FRONTEND}/about" style="color: #999999; text-decoration: underline;">About</a>.&nbsp;
-  <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">Unsubscribe</a>.
+      <a href="${process.env.FRONTEND}/" style="color: #999999; text-decoration: underline;">View Upcoming Birthdays</a> &nbsp;
 </div>
       <div style="font-size: 8px; color: #999999; text-align: center; margin: 7px 0;">
-        <strong><i>**THIS IS AN AUTO GENERATED MAIL FROM THE MAIN WEBSITE. THIS WILL BE GENERATED WHENEVER THERE IS A BIRTHDAY**</i></strong>
+        <strong><i>**THIS EMAIL WILL BE GENERATED ON EVERY BIRTHDAY OF MCOMS-2020 STUDENTS**</i></strong>
+      </div>
+      <div style="font-size: 8px; color: #999999; text-align: center; margin: 7px 0;">
+        <strong><i>if you dont like, you can <a href="${process.env.FRONTEND}/unsubscribe" style="color: #999999; text-decoration: underline;">Remove Your Email.</a></i></strong>
       </div>
       <div style="font-size: 8px; color: #999999; text-align: center; margin: 7px 0;">
         Made with ❤️ by <a href='sajidaalam.com.np'>sajid</a>
@@ -442,7 +442,6 @@ router.get("/sendmails", async (req, res) => {
     </div>
       `,
   };
-
   try {
     await transporter.sendMail(mailOptions);
     console.log(`Email sent to`);
@@ -458,6 +457,12 @@ router.get("/sendmails", async (req, res) => {
 
 router.post("/addemail", async (req, res) => {
   try {
+
+    return res
+      .status(201)
+      .json({ message: "deprecated!" });
+
+      
     const { email } = req.body;
     const existingEmail = await Emails.findOne({ email });
     if (existingEmail) {
@@ -478,10 +483,17 @@ router.post("/addemail", async (req, res) => {
 
 router.get("/add-emails", async (req, res) => {
   try {
-    const emails = [
-      '2alamsajid@gmail.com',
-      'livingasrb007@gmail.com'
-    ]
+    // const emails = [
+    //   '2alamsajid@gmail.com',
+    //   'livingasrb007@gmail.com'
+    // ]
+
+    return res
+      .status(201)
+      .json({ message: "deprecated!" });
+
+    const emails = ['2mdsajid@gmail.com','livingasrb007@gmail.com', 'anuzmessi44@gmail.com', 'keshav.acharya059@gmail.com', 'rx.laxman1@gmail.com', '1sameeradhikari2@gmail.com', 'prabeshalam7@gmail.com', 'bishalbanmala833@gmail.com', 'ashishbaral1856@gmail.com', 'baralb123@gmail.com', 'prashantbasel56@gmail.com', 'rajbasel056@gmail.com', 'abhibelbase@gmail.com', 'bhandarishristi485@gmail.com', 'bhandarisuyog3@gmail.com', 'adityabhardwaj113@gmail.com', 'suprasanna.bhatta@gmail.com', 'bhujel963@gmail.com', 'syrussenchury@gmail.com', 'bistsujata60@gmail.com', 'dshubhamraj2002@gmail.com', 'serajahamad3134@gmail.com', 'aditigautam06@gmail.com', 'ugeshgjm32@gmail.com', 'magardiksha03@gmail.com', 'aashutoshg51@gmail.com', 'roniyar.sachin78@gmail.com', 'bishruti111@gmail.com', 'sardogurung@gmail.com', 'shijangyawali70@gmail.com', 'iamayusss@gmail.com', 'himani2020jha@gmail.com', 'manas4jha@gmail.com', 'sneha.jha4567@gmail.com', 'aryanjoshi.np@gmail.com', 'mukeshjoshi68021@gmail.com', 'mukund224227@gmail.com', 'purakkc787@gmail.com', 'manishkapar632@gmail.com', 'binitkarki1475@gmail.com', 'sungarsh35@gmail.com', 'chetryseeja7890@gmail.com', 'alpukayastha.h@gmail.com', 'kcbishal613@gmail.com', 'khadkapuru777@gmail.com', 'surajmedico4567@gmail.comBatch', 'shubhamkundliya@gmail.com', 'preranakunwar2058@gmail.com', 'anishalamichhane2000@gmail.com', 'anupama.lamichhane123@gmail.com', 'maharjansajina.4@gmail.con', 'anilnobul@gmail.com', 'annchalsheema@gmail.com', 'neupaneaamod1@gmail.com', 'akashnishad026@gmail.com', 'nishantpandey057@gmail.com', 'umeshpant174@gmail.com', 'grishmaparajuli12@gmail.com', 'visikaparajuli@gmail.com', 'patelgautam1867@gmail.com', 'ahsuni977@gmail.com', 'sainpokhrel666@gmail.com', 'pokhrelsujal123@gmail.com', 'poudel.abhisekh25@gmail.com', 'hritikaprasad2002@gmail.com', 'akankshapriya1414@gmail.com', 'nehapuri2058@gmail.com', 'manasa.rajbanshi@gmail.com', 'isharegmi091@gmail.com', 'smritirimal5@gmail.com', 'ramchandraruchal2002@gmail.com', 'amar215678@gmail.com', 'sahmanisha839@gmail.com', 'memayank004@gmail.com', 'roxkks@gmail.com', 'shahran72779673@gmail.com', 'shahsaurav18ab@gmail.com', 'shahvenessa3@gmail.com', 'A1522079861331792@gmail.com', 'anuskastha321@gmail.com', 'jeenashresthadha@gmail.com', 'sthaprerana505@gmail.com', 'samirstha411@gmail.com', 'samirshre12@gmail.com', 'devyanshshukla.as.ds@gmail.com', 'meelansnrr@gmail.com', 'aparnaghising50@gmail.com', 'thakuranjana184@gmail.com', 'aayashathapa321@gmail.com', 'sumiranthapa84@gmail.com', 'bijayatimilsina64@gamil.comBatch', 'apinatiwari123@gmail.com', 'pranita2027@gmail.com', 'aashishyadav683@gmail.com', 'ay357717@gmail.com', 'yadavbarun900@gmail.com', 'yadavshruti7090@gmail.com', 'yadavuniverse123@gmail.com', 'yadavivek428@gmail.com', 'aayushkoirala1999@gmail.com']
+
     // const { email } = req.body;
     emails.forEach(async (email) => {
       const existingEmail = await Emails.findOne({ email });
@@ -490,6 +502,7 @@ router.get("/add-emails", async (req, res) => {
         await newEmail.save();
       }
     })
+
     return res
       .status(201)
       .json({ message: "Email added successfully", emails: emails.length });
